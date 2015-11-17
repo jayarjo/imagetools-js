@@ -30,7 +30,7 @@ define(
       // used outside
       blobToDataUri: blobToDataUri,
       // used outside
-      blobToBase64: blobToBase64,
+      blobToBase64: blobToBase64
     };
   }
 );

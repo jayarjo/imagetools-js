@@ -11,17 +11,25 @@
 /**
  * Returns the size of images.
  */
-define("ephox/imagetools/util/ImageSize", [], function() {
-	function getWidth(image) {
-		return image.naturalWidth || image.width;
-	}
+define(
+  'ephox.imagetools.util.ImageSize',
 
-	function getHeight(image) {
-		return image.naturalHeight || image.height;
-	}
+  [
 
-	return {
-		getWidth: getWidth,
-		getHeight: getHeight
-	};
-});
+  ],
+
+  function() {
+    function getWidth(image) {
+      return image.naturalWidth || image.width;
+    }
+
+    function getHeight(image) {
+      return image.naturalHeight || image.height;
+    }
+
+    return {
+      getWidth: getWidth,
+      getHeight: getHeight
+    };
+  }
+);

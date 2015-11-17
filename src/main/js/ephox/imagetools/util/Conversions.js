@@ -11,189 +11,195 @@
 /**
  * Converts blob/uris/images back and forth.
  */
-define("ephox/imagetools/util/Conversions", [
-	"ephox/imagetools/util/Promise",
-	"ephox/imagetools/util/Canvas",
-	"ephox/imagetools/util/Mime",
-	"ephox/imagetools/util/ImageSize"
-], function(Promise, Canvas, Mime, ImageSize) {
-	function loadImage(image) {
-		return new Promise(function(resolve) {
-			function loaded() {
-				image.removeEventListener('load', loaded);
-				resolve(image);
-			}
+define(
+  'ephox.imagetools.util.Conversions',
 
-			if (image.complete) {
-				resolve(image);
-			} else {
-				image.addEventListener('load', loaded);
-			}
-		});
-	}
+  [
+    'ephox.imagetools.util.Promise',
+    'ephox.imagetools.util.Canvas',
+    'ephox.imagetools.util.Mime',
+    'ephox.imagetools.util.ImageSize'
+  ],
 
-	function imageToCanvas(image) {
-		return loadImage(image).then(function(image) {
-			var context, canvas;
+  function(Promise, Canvas, Mime, ImageSize) {
+    function loadImage(image) {
+      return new Promise(function(resolve) {
+        function loaded() {
+          image.removeEventListener('load', loaded);
+          resolve(image);
+        }
 
-			canvas = Canvas.create(ImageSize.getWidth(image), ImageSize.getHeight(image));
-			context = Canvas.get2dContext(canvas);
-			context.drawImage(image, 0, 0);
+        if (image.complete) {
+          resolve(image);
+        } else {
+          image.addEventListener('load', loaded);
+        }
+      });
+    }
 
-			return canvas;
-		});
-	}
+    function imageToCanvas(image) {
+      return loadImage(image).then(function(image) {
+        var context, canvas;
 
-	function imageToBlob(image) {
-		return loadImage(image).then(function(image) {
-			var src = image.src;
+        canvas = Canvas.create(ImageSize.getWidth(image), ImageSize.getHeight(image));
+        context = Canvas.get2dContext(canvas);
+        context.drawImage(image, 0, 0);
 
-			if (src.indexOf('blob:') === 0) {
-				return blobUriToBlob(src);
-			}
+        return canvas;
+      });
+    }
 
-			if (src.indexOf('data:') === 0) {
-				return dataUriToBlob(src);
-			}
+    function imageToBlob(image) {
+      return loadImage(image).then(function(image) {
+        var src = image.src;
 
-			return imageToCanvas(image).then(function(canvas) {
-				return dataUriToBlob(canvas.toDataURL(Mime.guessMimeType(src)));
-			});
-		});
-	}
+        if (src.indexOf('blob:') === 0) {
+          return blobUriToBlob(src);
+        }
 
-	function blobToImage(blob) {
-		return new Promise(function(resolve) {
-			var image = new Image();
+        if (src.indexOf('data:') === 0) {
+          return dataUriToBlob(src);
+        }
 
-			function loaded() {
-				image.removeEventListener('load', loaded);
-				resolve(image);
-			}
+        return imageToCanvas(image).then(function(canvas) {
+          return dataUriToBlob(canvas.toDataURL(Mime.guessMimeType(src)));
+        });
+      });
+    }
 
-			image.addEventListener('load', loaded);
-			image.src = URL.createObjectURL(blob);
+    function blobToImage(blob) {
+      return new Promise(function(resolve) {
+        var image = new Image();
 
-			if (image.complete) {
-				loaded();
-			}
-		});
-	}
+        function loaded() {
+          image.removeEventListener('load', loaded);
+          resolve(image);
+        }
 
-	function blobUriToBlob(url) {
-		return new Promise(function(resolve) {
-			var xhr = new XMLHttpRequest();
+        image.addEventListener('load', loaded);
+        image.src = URL.createObjectURL(blob);
 
-			xhr.open('GET', url, true);
-			xhr.responseType = 'blob';
+        if (image.complete) {
+          loaded();
+        }
+      });
+    }
 
-			xhr.onload = function() {
-				if (this.status == 200) {
-					resolve(this.response);
-				}
-			};
+    function blobUriToBlob(url) {
+      return new Promise(function(resolve) {
+        var xhr = new XMLHttpRequest();
 
-			xhr.send();
-		});
-	}
+        xhr.open('GET', url, true);
+        xhr.responseType = 'blob';
 
-	function dataUriToBlob(uri) {
-		return new Promise(function(resolve) {
-			var str, arr, i, matches, type, blobBuilder;
+        xhr.onload = function() {
+          if (this.status == 200) {
+            resolve(this.response);
+          }
+        };
 
-			uri = uri.split(',');
+        xhr.send();
+      });
+    }
 
-			matches = /data:([^;]+)/.exec(uri[0]);
-			if (matches) {
-				type = matches[1];
-			}
+    function dataUriToBlob(uri) {
+      return new Promise(function(resolve) {
+        var str, arr, i, matches, type, blobBuilder;
 
-			str = atob(uri[1]);
+        uri = uri.split(',');
 
-			if (window.WebKitBlobBuilder) {
-				/*globals WebKitBlobBuilder:false */
-				blobBuilder = new WebKitBlobBuilder();
+        matches = /data:([^;]+)/.exec(uri[0]);
+        if (matches) {
+          type = matches[1];
+        }
 
-				arr = new ArrayBuffer(str.length);
-				for (i = 0; i < arr.length; i++) {
-					arr[i] = str.charCodeAt(i);
-				}
+        str = atob(uri[1]);
 
-				blobBuilder.append(arr);
+        if (window.WebKitBlobBuilder) {
+          /*globals WebKitBlobBuilder:false */
+          blobBuilder = new WebKitBlobBuilder();
 
-				resolve(blobBuilder.getBlob(type));
-				return;
-			}
+          arr = new ArrayBuffer(str.length);
+          for (i = 0; i < arr.length; i++) {
+            arr[i] = str.charCodeAt(i);
+          }
 
-			arr = new Uint8Array(str.length);
+          blobBuilder.append(arr);
 
-			for (i = 0; i < arr.length; i++) {
-				arr[i] = str.charCodeAt(i);
-			}
+          resolve(blobBuilder.getBlob(type));
+          return;
+        }
 
-			resolve(new Blob([arr], {type: type}));
-		});
-	}
+        arr = new Uint8Array(str.length);
 
-	function uriToBlob(url) {
-		if (url.indexOf('blob:') === 0) {
-			return blobUriToBlob(url);
-		}
+        for (i = 0; i < arr.length; i++) {
+          arr[i] = str.charCodeAt(i);
+        }
 
-		if (url.indexOf('data:') === 0) {
-			return dataUriToBlob(url);
-		}
+        resolve(new Blob([arr], {type: type}));
+      });
+    }
 
-		return null;
-	}
+    function uriToBlob(url) {
+      if (url.indexOf('blob:') === 0) {
+        return blobUriToBlob(url);
+      }
 
-	function canvasToBlob(canvas, type) {
-		return dataUriToBlob(canvas.toDataURL(type));
-	}
+      if (url.indexOf('data:') === 0) {
+        return dataUriToBlob(url);
+      }
 
-	function blobToDataUri(blob) {
-		return new Promise(function(resolve) {
-			var reader = new FileReader();
+      return null;
+    }
 
-			reader.onloadend = function() {
-				resolve(reader.result);
-			};
+    function canvasToBlob(canvas, type) {
+      return dataUriToBlob(canvas.toDataURL(type));
+    }
 
-			reader.readAsDataURL(blob);
-		});
-	}
+    function blobToDataUri(blob) {
+      return new Promise(function(resolve) {
+        var reader = new FileReader();
 
-	function blobToBase64(blob) {
-		return blobToDataUri(blob).then(function(dataUri) {
-			return dataUri.split(',')[1];
-		});
-	}
+        reader.onloadend = function() {
+          resolve(reader.result);
+        };
 
-	function revokeImageUrl(image) {
-		URL.revokeObjectURL(image.src);
-	}
+        reader.readAsDataURL(blob);
+      });
+    }
 
-	return {
-    // used outside
-		blobToImage: blobToImage,
-    // used outside
-		imageToBlob: imageToBlob,
-    // used outside
-		blobToDataUri: blobToDataUri,
-    // used outside
-		blobToBase64: blobToBase64,
+    function blobToBase64(blob) {
+      return blobToDataUri(blob).then(function(dataUri) {
+        return dataUri.split(',')[1];
+      });
+    }
 
-    // helper method
-		imageToCanvas: imageToCanvas,
+    function revokeImageUrl(image) {
+      URL.revokeObjectURL(image.src);
+    }
 
-    // helper method
-		canvasToBlob: canvasToBlob,
+    return {
+      // used outside
+      blobToImage: blobToImage,
+      // used outside
+      imageToBlob: imageToBlob,
+      // used outside
+      blobToDataUri: blobToDataUri,
+      // used outside
+      blobToBase64: blobToBase64,
 
-    // helper method
-		revokeImageUrl: revokeImageUrl,
+      // helper method
+      imageToCanvas: imageToCanvas,
 
-     // helper method
-    uriToBlob: uriToBlob,
+      // helper method
+      canvasToBlob: canvasToBlob,
 
-	};
-});
+      // helper method
+      revokeImageUrl: revokeImageUrl,
+
+       // helper method
+      uriToBlob: uriToBlob
+
+    };
+  }
+);

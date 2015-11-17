@@ -11,12 +11,17 @@
 /**
  * Applies various filters to blobs.
  */
-define("ephox/imagetools/transformations/Filters", [
-	"ephox/imagetools/util/Canvas",
-	"ephox/imagetools/util/ImageSize",
-	"ephox/imagetools/util/Conversions",
-	"ephox/imagetools/transformations/ColorMatrix"
-], function(Canvas, ImageSize, Conversions, ColorMatrix) {
+define(
+  'ephox.imagetools.transformations.Filters',
+
+  [
+  	'ephox.imagetools.util.Canvas',
+  	'ephox.imagetools.util.ImageSize',
+  	'ephox.imagetools.util.Conversions',
+  	'ephox.imagetools.transformations.ColorMatrix'
+  ],
+
+ function(Canvas, ImageSize, Conversions, ColorMatrix) {
 	var revokeImageUrl = Conversions.revokeImageUrl;
 
 	function colorFilter(blob, matrix) {

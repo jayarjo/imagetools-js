@@ -11,89 +11,95 @@
 /**
  * Modifies image blobs.
  */
-define("ephox/imagetools/transformations/ImageTools", [
-	"ephox/imagetools/util/Conversions",
-	"ephox/imagetools/util/Canvas",
-	"ephox/imagetools/util/ImageSize"
-], function(Conversions, Canvas, ImageSize) {
-	var revokeImageUrl = Conversions.revokeImageUrl;
+define(
+  'ephox.imagetools.transformations.ImageTools',
 
-	function rotate(blob, angle) {
-		return Conversions.blobToImage(blob).then(function(image) {
-			var canvas = Canvas.create(ImageSize.getWidth(image), ImageSize.getHeight(image)),
-				context = Canvas.get2dContext(canvas),
-				translateX = 0, translateY = 0;
+  [
+    'ephox.imagetools.util.Conversions',
+    'ephox.imagetools.util.Canvas',
+    'ephox.imagetools.util.ImageSize'
+  ],
 
-			angle = angle < 0 ? 360 + angle : angle;
+  function(Conversions, Canvas, ImageSize) {
+    var revokeImageUrl = Conversions.revokeImageUrl;
 
-			if (angle == 90 || angle == 270) {
-				Canvas.resize(canvas, canvas.height, canvas.width);
-			}
+    function rotate(blob, angle) {
+      return Conversions.blobToImage(blob).then(function(image) {
+        var canvas = Canvas.create(ImageSize.getWidth(image), ImageSize.getHeight(image)),
+          context = Canvas.get2dContext(canvas),
+          translateX = 0, translateY = 0;
 
-			if (angle == 90 || angle == 180) {
-				translateX = canvas.width;
-			}
+        angle = angle < 0 ? 360 + angle : angle;
 
-			if (angle == 270 || angle == 180) {
-				translateY = canvas.height;
-			}
+        if (angle == 90 || angle == 270) {
+          Canvas.resize(canvas, canvas.height, canvas.width);
+        }
 
-			context.translate(translateX, translateY);
-			context.rotate(angle * Math.PI / 180);
-			context.drawImage(image, 0, 0);
-			revokeImageUrl(image);
+        if (angle == 90 || angle == 180) {
+          translateX = canvas.width;
+        }
 
-			return Conversions.canvasToBlob(canvas, blob.type);
-		});
-	}
+        if (angle == 270 || angle == 180) {
+          translateY = canvas.height;
+        }
 
-	function flip(blob, axis) {
-		return Conversions.blobToImage(blob).then(function(image) {
-			var canvas = Canvas.create(ImageSize.getWidth(image), ImageSize.getHeight(image)),
-				context = Canvas.get2dContext(canvas);
+        context.translate(translateX, translateY);
+        context.rotate(angle * Math.PI / 180);
+        context.drawImage(image, 0, 0);
+        revokeImageUrl(image);
 
-			if (axis == 'v') {
-				context.scale(1, -1);
-				context.drawImage(image, 0, -canvas.height);
-			} else {
-				context.scale(-1, 1);
-				context.drawImage(image, -canvas.width, 0);
-			}
+        return Conversions.canvasToBlob(canvas, blob.type);
+      });
+    }
 
-			revokeImageUrl(image);
+    function flip(blob, axis) {
+      return Conversions.blobToImage(blob).then(function(image) {
+        var canvas = Canvas.create(ImageSize.getWidth(image), ImageSize.getHeight(image)),
+          context = Canvas.get2dContext(canvas);
 
-			return Conversions.canvasToBlob(canvas);
-		});
-	}
+        if (axis == 'v') {
+          context.scale(1, -1);
+          context.drawImage(image, 0, -canvas.height);
+        } else {
+          context.scale(-1, 1);
+          context.drawImage(image, -canvas.width, 0);
+        }
 
-	function crop(blob, x, y, w, h) {
-		return Conversions.blobToImage(blob).then(function(image) {
-			var canvas = Canvas.create(w, h),
-				context = Canvas.get2dContext(canvas);
+        revokeImageUrl(image);
 
-			context.drawImage(image, -x, -y);
-			revokeImageUrl(image);
+        return Conversions.canvasToBlob(canvas);
+      });
+    }
 
-			return Conversions.canvasToBlob(canvas);
-		});
-	}
+    function crop(blob, x, y, w, h) {
+      return Conversions.blobToImage(blob).then(function(image) {
+        var canvas = Canvas.create(w, h),
+          context = Canvas.get2dContext(canvas);
 
-	function resize(blob, w, h) {
-		return Conversions.blobToImage(blob).then(function(image) {
-			var canvas = Canvas.create(w, h),
-				context = Canvas.get2dContext(canvas);
+        context.drawImage(image, -x, -y);
+        revokeImageUrl(image);
 
-			context.drawImage(image, 0, 0, w, h);
-			revokeImageUrl(image);
+        return Conversions.canvasToBlob(canvas);
+      });
+    }
 
-			return Conversions.canvasToBlob(canvas, blob.type);
-		});
-	}
+    function resize(blob, w, h) {
+      return Conversions.blobToImage(blob).then(function(image) {
+        var canvas = Canvas.create(w, h),
+          context = Canvas.get2dContext(canvas);
 
-	return {
-		rotate: rotate,
-		flip: flip,
-		crop: crop,
-		resize: resize
-	};
-});
+        context.drawImage(image, 0, 0, w, h);
+        revokeImageUrl(image);
+
+        return Conversions.canvasToBlob(canvas, blob.type);
+      });
+    }
+
+    return {
+      rotate: rotate,
+      flip: flip,
+      crop: crop,
+      resize: resize
+    };
+  }
+);

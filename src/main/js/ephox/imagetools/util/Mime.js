@@ -11,32 +11,40 @@
 /**
  * Returns mime types for uris.
  */
-define("ephox/imagetools/util/Mime", [], function() {
-	function getUriPathName(uri) {
-		var a = document.createElement('a');
+define(
+  'ephox.imagetools.util.Mime',
 
-		a.href = uri;
+  [
 
-		return a.pathname;
-	}
+  ],
 
-	function guessMimeType(uri) {
-		var parts = getUriPathName(uri).split('.'),
-			ext = parts[parts.length - 1],
-			mimes = {
-				'jpg': 'image/jpeg',
-				'jpeg': 'image/jpeg',
-				'png': 'image/png'
-			};
+  function() {
+    function getUriPathName(uri) {
+      var a = document.createElement('a');
 
-		if (ext) {
-			ext = ext.toLowerCase();
-		}
+      a.href = uri;
 
-		return mimes[ext];
-	}
+      return a.pathname;
+    }
 
-	return {
-		guessMimeType: guessMimeType
-	};
-});
+    function guessMimeType(uri) {
+      var parts = getUriPathName(uri).split('.'),
+        ext = parts[parts.length - 1],
+        mimes = {
+          'jpg': 'image/jpeg',
+          'jpeg': 'image/jpeg',
+          'png': 'image/png'
+        };
+
+      if (ext) {
+        ext = ext.toLowerCase();
+      }
+
+      return mimes[ext];
+    }
+
+    return {
+      guessMimeType: guessMimeType
+    };
+  }
+);
