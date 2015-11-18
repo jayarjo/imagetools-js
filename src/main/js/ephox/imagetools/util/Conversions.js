@@ -15,13 +15,13 @@ define(
   'ephox.imagetools.util.Conversions',
 
   [
-    'ephox.imagetools.util.Promise',
     'ephox.imagetools.util.Canvas',
+    'ephox.imagetools.util.ImageSize',
     'ephox.imagetools.util.Mime',
-    'ephox.imagetools.util.ImageSize'
+    'ephox.imagetools.util.Promise'
   ],
 
-  function(Promise, Canvas, Mime, ImageSize) {
+  function(Canvas, ImageSize, Mime, Promise) {
     function loadImage(image) {
       return new Promise(function(resolve) {
         function loaded() {
@@ -61,6 +61,10 @@ define(
           return dataUriToBlob(src);
         }
 
+        if (src.indexOf('http') === 0) {
+          return uriToBlob(image);
+        }
+
         return imageToCanvas(image).then(function(canvas) {
           return dataUriToBlob(canvas.toDataURL(Mime.guessMimeType(src)));
         });
@@ -91,7 +95,6 @@ define(
 
         xhr.open('GET', url, true);
         xhr.responseType = 'blob';
-
         xhr.onload = function() {
           if (this.status == 200) {
             resolve(this.response);
@@ -147,16 +150,11 @@ define(
       });
     }
 
-    function uriToBlob(url) {
-      if (url.indexOf('blob:') === 0) {
-        return blobUriToBlob(url);
-      }
-
-      if (url.indexOf('data:') === 0) {
-        return dataUriToBlob(url);
-      }
-
-      return null;
+    function uriToBlob(image) {
+      // TODO: need to fix image server cors or implement a proxy.
+      return imageToCanvas(img).then(function (canvas) {
+        canvasToBlob(canvas, 'image/png');
+      });
     }
 
     function canvasToBlob(canvas, type) {
@@ -196,6 +194,8 @@ define(
       blobToBlobUri: blobToBlobUri,
       // used outside
       blobToBase64: blobToBase64,
+      // used outside
+      uriToBlob: uriToBlob,
 
       // helper method
       imageToCanvas: imageToCanvas,
@@ -204,11 +204,7 @@ define(
       canvasToBlob: canvasToBlob,
 
       // helper method
-      revokeImageUrl: revokeImageUrl,
-
-       // helper method
-      uriToBlob: uriToBlob
-
+      revokeImageUrl: revokeImageUrl
     };
   }
 );
