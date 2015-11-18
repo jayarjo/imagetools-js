@@ -102,6 +102,13 @@ define(
       });
     }
 
+    function blobToBlobUri(blob) {
+      return new Promise(function(resolve) {
+        var blobUri = URL.createObjectURL(blob);
+        resolve(blobUri);
+      });
+    }
+
     function dataUriToBlob(uri) {
       return new Promise(function(resolve) {
         var str, arr, i, matches, type, blobBuilder;
@@ -185,6 +192,8 @@ define(
       imageToBlob: imageToBlob,
       // used outside
       blobToDataUri: blobToDataUri,
+      // used outside
+      blobToBlobUri: blobToBlobUri,
       // used outside
       blobToBase64: blobToBase64,
 
