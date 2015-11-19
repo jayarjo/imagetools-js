@@ -79,7 +79,6 @@ define(
           image.removeEventListener('load', loaded);
           resolve(image);
         }
-
         image.addEventListener('load', loaded);
         image.src = URL.createObjectURL(blob);
 
@@ -152,8 +151,19 @@ define(
 
     function uriToBlob(image) {
       // TODO: need to fix image server cors or implement a proxy.
+      // TODO: This is spike code! see TBIO-3547
+
+      // server config should be applied here
+      var proxy = 'http://puff/proxy/proxy.php?url=';
+      var src = proxy + (proxy.indexOf('?') === -1 ? '?' : '&') + 'url=' + encodeURIComponent(image.src);
+      var img = new Image;
+
+      //note ie does not support this
+      img.crossOrigin = "Anonymous";
+      img.src = src;
+
       return imageToCanvas(img).then(function (canvas) {
-        canvasToBlob(canvas, 'image/png');
+        return canvasToBlob(canvas, 'image/png');
       });
     }
 
