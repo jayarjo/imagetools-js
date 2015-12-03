@@ -153,10 +153,7 @@ define("ephox/imagetools/util/Conversions", [
 
   function urlToBlob(image) {
     var img = new Image;
-    //note ie does not support crossOrigin
-    img.crossOrigin = "Anonymous";
     img.src = image.src;
-
     return imageToCanvas(img).then(function (canvas) {
       return canvasToBlob(canvas, 'image/png');
     });
