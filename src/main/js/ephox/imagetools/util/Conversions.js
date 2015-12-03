@@ -56,6 +56,10 @@ define("ephox/imagetools/util/Conversions", [
         return dataUriToBlob(src);
       }
 
+      if (src.indexOf('http') === 0) {
+        return urlToBlob(image);
+      }
+
       return imageToCanvas(image).then(function(canvas) {
         return dataUriToBlob(canvas.toDataURL(Mime.guessMimeType(src)));
       });
@@ -145,6 +149,17 @@ define("ephox/imagetools/util/Conversions", [
     }
 
     return null;
+  }
+
+  function urlToBlob(image) {
+    var img = new Image;
+    //note ie does not support crossOrigin
+    img.crossOrigin = "Anonymous";
+    img.src = image.src;
+
+    return imageToCanvas(img).then(function (canvas) {
+      return canvasToBlob(canvas, 'image/png');
+    });
   }
 
   function canvasToBlob(canvas, type) {
